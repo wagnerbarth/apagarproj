@@ -9,15 +9,7 @@ const routes: Routes = [
   },
   {
     path: 'login',
-    loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)
-  },
-  {
-    path: 'crud/:usuario',
-    loadChildren: () => import('./crud/crud.module').then( m => m.CrudPageModule)
-  },
-  {
-    path: 'cadastrar',
-    loadChildren: () => import('./cadastrar/cadastrar.module').then( m => m.CadastrarPageModule)
+    loadChildren: () => import('./login/login.module').then( m => m.LoginPageModule)
   }
 ];
 

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-// sqlite
+import { Router } from '@angular/router';
+// adicionar módulos
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
 
 @Component({
@@ -9,101 +10,115 @@ import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
 })
 export class LoginPage implements OnInit {
 
-  // variáveis
+  // variaveis
   usuario: string;
   senha: string;
 
   constructor(
-    private sqLite: SQLite
+    private sqLite: SQLite,
+    private router: Router
   ) {
-    // inicialização de variáveis
     this.usuario = 'admin';
-    this.senha = '123456';
+    this.senha = '123';
   }
 
   ngOnInit() {
-    this.criarBD(); // ao iniciar o ciclo de vida da aplicação
+    this.criarDB(); // criar ou abre o banco de dados no ciclo de vida inicial do app
   }
 
-  // método para criar o banco de dados
-  // usaremos o método sqlite.create()
-  // mo método create() serve para criar e abrir um BD
-  criarBD() {
-    this.sqLite.create({
-      name: 'login.db', // cria Database ou abre se já existe
+  // método para criar a base de dados
+  // sqLite.create() - serve teanto para criar como para abrir
+  criarDB() {
+    this.sqLite.create({ // serve tanto para criar quanto para abrir a base de dados
+      name: 'turmaB.db',
       location: 'default'
     })
-      .then((db: SQLiteObject) => { // o objto db permite a execução da query
-
-        db.executeSql('DROP TABLE usuarios', []).then(() => { alert('ok'); });
-
-
-        // constante sql que contém a query para crar uma tabela
+      .then((db: SQLiteObject) => { // obj db permite execução de métodos do sqLite
+        // criar uma constante sql com a query para criar a tabela
+        // alert('Entrou DB create usuarios');  // debug
         const sql = 'CREATE TABLE IF NOT EXISTS usuarios(' +
           'id INTEGER PRIMARY KEY,' +
           'usuario TEXT UNIQUE NOT NULL,' +
           'email TEXT UNIQUE NOT NULL,' +
           'senha TEXT NOT NULL)';
 
-        // executando a query de criação de tabela
+        // executar a query de criação de tabela
         db.executeSql(sql, [])
-          .then(() => {
-            alert('Tabela usuarios ok!'); // sempre será executado ao abrir a aplicação
+          .then(() => { // sempre será executada ao abrir a aplicação
+            // alert('Tabela usuarios Ok!');
 
-            // inserir usuario padrão admin somente se ele não existir
+            // testar se o usuário admin padrão já existe no banco
             const sqlSelect = 'SELECT * FROM usuarios WHERE usuario = "admin"';
 
-            db.executeSql(sqlSelect, []) // executo a query que testa se existe usuario admin
-              .then((result) => {  // se existe o usuario admin retorna 1 registro e não insere
-                if (result.rows.lenght < 1) {
-                  // inserir o usuario padrão admin de login
-                  const sqlInsert = 'INSERT INTO usuarios ("usuario", "email", "senha") VALUES (?,?,?)';
+            // executar a query de pesquisa de usuário admin padrão
+            db.executeSql(sqlSelect, [])
+              .then((result) => {
+                // usar um count de registros para testar result.rows.length
+                if (result.rows.length < 1) {
+                  // inserir o usuário padrão admin
+                  const sqlInsert = 'INSERT INTO usuarios (usuario, email, senha) VALUES (?,?,?)';
 
-                  // config dos dados a serem inseridos na tabela
-                  const dadosUsuario = ['admin', 'admin@admin.com', '123456'];
+                  // configurar os dados a serem inseridos no banco
+                  const dadosUsuario = ['admin', 'admin@admin.com', '123'];
 
-                  // usando array de dados para a query
-                  db.executeSql(sqlInsert, dadosUsuario).then(() => { alert('Usuario admin OK!'); });
+                  // executar a query para inserir os dados do usuário admin
+                  db.executeSql(sqlInsert, dadosUsuario)
+                    .then(() => {
+                      // alert('Usuário admin OK!');
+                    });
                 }
               });
           })
           .catch(() => {
-            alert('Tabela usuarios erro!');
+            alert('Tabela usuarios Erro!');
           });
       })
       .catch((err) => {
-        alert('Erro ao criar Database cadastro!');
+        alert('Create Database Error!');
       });
   }
 
-  /*-----------------------------
-  * Método que realiza o login da aplicação
-  ------------------------------*/
+  /* --------------------------------------
+  * Método de Login
+  * recebe 2 parâmetros:
+  *   usuario do tipo string
+  *   senha do tipo string
+  -----------------------------------------*/
   login(usuario: string, senha: string) {
-    // alert(usuario + ' ' + senha); debug
 
+    // preparar os dados do usuario
     const dadosUsuario = [
       usuario,
       senha
     ];
 
     // abrir o banco de dados
-    this.sqLite.create({
-      name: 'login.db',
+    this.sqLite.create({ // serve tanto para criar quanto para abrir a base de dados
+      name: 'turmaB.db',
       location: 'default'
     })
       .then((db: SQLiteObject) => {
-        // query de consulta de usuario
-        const sql = 'SELECT * FROM usuarios WHERE usuario=? AND senha=?';
+        // prepared statement query
+        const sql = 'SELECT * FROM usuarios WHERE usuario = ? AND senha = ?';
 
         db.executeSql(sql, dadosUsuario)
           .then((result) => {
-            console.log('Login OK', result);
-          })
-          .catch((erro) => {
-            console.log('Login Error', erro);
+            console.log('login: ', result);
+            const login = result.rows.length;
+            // alert(login); debug
+            if (login === 1) {
+              // alert('Login OK');
+              // redirecionar para uma nova página (crud)
+              this.router.navigateByUrl('/crud/' + usuario);
+            } else {
+              alert('Deu ruim....');
+            }
           });
-      })
-      .catch();
+      });
   }
+
+  cadastrarUsuario() {
+    this.router.navigateByUrl('/cadastrar');
+  }
+
 }

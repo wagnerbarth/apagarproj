@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Crud</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <h3>{{title}}</h3>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col>ID</ion-col>
+      <ion-col>Usuário</ion-col>
+      <ion-col>Email</ion-col>
+      <ion-col>Senha</ion-col>
+      <ion-col>Ação</ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let item of results">
+      <ion-col>{{item.id}}</ion-col>
+      <ion-col (click)="promptAtualizar('usuario', item.usuario, item)">{{item.usuario}}</ion-col>
+      <ion-col (click)="promptAtualizar('email', item.email, item)">{{item.email}}</ion-col>
+      <ion-col (click)="promptAtualizar('senha', item.senha, item)">{{item.senha}}</ion-col>
+      <ion-col> - </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>
